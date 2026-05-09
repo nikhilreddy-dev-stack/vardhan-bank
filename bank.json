@@ -3,5 +3,10 @@
         "pin": "2345",
         "balance": 0,
         "transactions": []
+    },
+    "nikhil": {
+        "pin": "1234",
+        "balance": 0,
+        "transactions": []
     }
 }

@@ -104,7 +104,7 @@ def check_balance():
 
     # STEP 4: Show balance
     print(f"💰 Current Balance: ₹{data[name]['balance']}")
-    
+
 def history():
 
     name = input("Enter name: ")
@@ -130,8 +130,71 @@ def history():
     for t in data[name]["transactions"]:
         print("-", t)
 
+def transfer_money():
+
+    sender = input("Enter your name: ")
+
+    data = load_data()
+
+    # STEP 1: Check sender exists
+    if sender not in data:
+        print("❌ Sender account not found!")
+        return
+
+    # STEP 2: Verify PIN
+    pin = input("Enter PIN: ")
+
+    if data[sender]["pin"] != pin:
+        print("❌ Incorrect PIN!")
+        return
+
+    # STEP 3: Receiver account
+    receiver = input("Enter receiver name: ")
+
+    # STEP 4: Check receiver exists
+    if receiver not in data:
+        print("❌ Receiver account not found!")
+        return
+
+    # Prevent self transfer
+    if sender == receiver:
+        print("❌ Cannot transfer to same account!")
+        return
+
+    # STEP 5: Amount
+    amount = int(input("Enter transfer amount: "))
+
+    # Prevent invalid amount
+    if amount <= 0:
+        print("❌ Invalid amount!")
+        return
+
+    # STEP 6: Balance check
+    if data[sender]["balance"] < amount:
+        print("❌ Insufficient balance!")
+        return
+
+    # STEP 7: Transfer process
+    data[sender]["balance"] -= amount
+
+    data[receiver]["balance"] += amount
+
+    # STEP 8: Transaction history
+    data[sender]["transactions"].append(
+        f"Transferred ₹{amount} to {receiver}"
+    )
+
+    data[receiver]["transactions"].append(
+        f"Received ₹{amount} from {sender}"
+    )
+
+    # STEP 9: Save changes
+    save_data(data)
+
+    print("✅ Transfer successful!")
+
 while True:
-    print("\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance\n5. History\n6. Exit")
+    print("\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance\n5. History\n6. Transfer amount\n7.Exit")
     choice = input("Choose: ")
 
     if choice == "1":
@@ -144,5 +207,8 @@ while True:
         check_balance()
     elif choice == "5":
         history()
-    else:
+    elif choice == "6":
+        transfer_money()
+    elif choice == "7":
+        print("👋 Thank you for using the banking system!")
         break
