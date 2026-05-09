@@ -21,10 +21,13 @@ def create_account():
         print("Account already exists!")
         return
 
+    pin = input("Set 4-digit PIN: ")
+
     data[name] = {
-        "balance": 0,
-        "transactions": []
-    }
+    "pin": pin,
+    "balance": 0,
+    "transactions": []
+     }
 
     save_data(data)
     print("✅ Account created!")
@@ -43,40 +46,89 @@ def deposit():
         print("Account not found!")
 
 def withdraw():
+
     name = input("Enter name: ")
-    amount = int(input("Enter amount: "))
+
     data = load_data()
 
-    if name in data:
-        if data[name]["balance"] >= amount:
-            data[name]["balance"] -= amount
-            data[name]["transactions"].append(f"Withdrew {amount}")
-            save_data(data)
-            print("🏧 Withdrawn!")
-        else:
-            print("❌ Insufficient balance!")
+    # STEP 1: Check account existence
+    if name not in data:
+        print("❌ Account not found!")
+        return
+
+    # STEP 2: Ask PIN only if account exists
+    pin = input("Enter PIN: ")
+
+    # STEP 3: Verify PIN
+    if data[name]["pin"] != pin:
+        print("❌ Incorrect PIN!")
+        return
+
+    # STEP 4: Ask amount only after successful login
+    amount = int(input("Enter amount: "))
+
+    # STEP 5: Check balance
+    if data[name]["balance"] >= amount:
+
+        data[name]["balance"] -= amount
+
+        data[name]["transactions"].append(
+            f"Withdrew {amount}"
+        )
+
+        save_data(data)
+
+        print("🏧 Withdrawal successful!")
+
     else:
-        print("Account not found!")
+        print("❌ Insufficient balance!") 
 
 def check_balance():
+
     name = input("Enter name: ")
+
     data = load_data()
 
-    if name in data:
-        print("Balance:", data[name]["balance"])
-    else:
-        print("Account not found!")
+    # STEP 1: Check account existence
+    if name not in data:
+        print("❌ Account not found!")
+        return
 
+    # STEP 2: Ask PIN
+    pin = input("Enter PIN: ")
+
+    # STEP 3: Verify PIN
+    if data[name]["pin"] != pin:
+        print("❌ Incorrect PIN!")
+        return
+
+    # STEP 4: Show balance
+    print(f"💰 Current Balance: ₹{data[name]['balance']}")
+    
 def history():
+
     name = input("Enter name: ")
+
     data = load_data()
 
-    if name in data:
-        print("\nTransactions:")
-        for t in data[name]["transactions"]:
-            print("-", t)
-    else:
-        print("Account not found!")
+    # STEP 1: Check account existence
+    if name not in data:
+        print("❌ Account not found!")
+        return
+
+    # STEP 2: Ask PIN
+    pin = input("Enter PIN: ")
+
+    # STEP 3: Verify PIN
+    if data[name]["pin"] != pin:
+        print("❌ Incorrect PIN!")
+        return
+
+    # STEP 4: Show transactions
+    print("\n📜 Transaction History:")
+
+    for t in data[name]["transactions"]:
+        print("-", t)
 
 while True:
     print("\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance\n5. History\n6. Exit")
