@@ -8,5 +8,10 @@
         "pin": "1234",
         "balance": 0,
         "transactions": []
+    },
+    "ram": {
+        "pin": "7890",
+        "balance": 0,
+        "transactions": []
     }
 }
