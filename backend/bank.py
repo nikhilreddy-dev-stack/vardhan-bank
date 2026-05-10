@@ -1,6 +1,7 @@
 import json
 import random
 from datetime import datetime
+from getpass import getpass
 
 FILE = "bank.json"
 
@@ -62,7 +63,7 @@ def create_account():
 
     name = input("Enter your name: ")
 
-    pin = input("Set 4-digit PIN: ")
+    pin = getpass("Set 4-digit PIN: ")
 
     # PIN validation
     if len(pin) != 4 or not pin.isdigit():
@@ -99,7 +100,7 @@ def login():
         print("❌ Account not found!")
         return None
 
-    pin = input("Enter PIN: ")
+    pin = getpass("Enter PIN: ")
 
     # Verify PIN
     if data[account_number]["pin"] != pin:
@@ -158,7 +159,7 @@ def withdraw(current_user):
         return
 
     # Final PIN confirmation
-    pin = input("Enter PIN to confirm withdrawal: ")
+    pin = getpass("Enter PIN to confirm withdrawal: ")
 
     if data[current_user]["pin"] != pin:
         print("❌ Incorrect PIN!")

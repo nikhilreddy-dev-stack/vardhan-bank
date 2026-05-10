@@ -10,6 +10,7 @@ A Python-based banking management system.
 - Session-based operations
 - Account number based banking
 - Timestamp every Transaction
+- Hidden PIN Input
 
 ## Tech Stack
 - Python
@@ -19,8 +20,9 @@ A Python-based banking management system.
 - json
 - random (for generating random account numbers without any repetition)
 - datetime(for timestamp in every transaction)
+- getpass(Unlike the standard input() function, which shows every character typed, getpass() hides the input to prevent anyone nearby from reading it.)
 
 ## Upcoming Features
 - Mini Statement
 - 3 Wrong PIN Attempts Lock Account
-- Hidden PIN Input
+- 🧾 Admin mode
