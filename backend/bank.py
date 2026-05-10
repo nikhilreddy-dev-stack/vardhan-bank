@@ -1,6 +1,6 @@
 import json
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from getpass import getpass
 
 FILE = "bank.json"
@@ -39,7 +39,6 @@ def generate_account_number(data):
             random.randint(10000000, 99999999)
         )
 
-        # Ensure uniqueness
         if account_number not in data:
             return account_number
 
@@ -77,7 +76,9 @@ def create_account():
         "name": name,
         "pin": pin,
         "balance": 0,
-        "transactions": []
+        "transactions": [],
+        "failed_attempts": 0,
+        "lock_until": None
     }
 
     save_data(data)
@@ -100,15 +101,84 @@ def login():
         print("❌ Account not found!")
         return None
 
+    account = data[account_number]
+
+    # =========================
+    # CHECK IF ACCOUNT LOCKED
+    # =========================
+    if account["lock_until"] is not None:
+
+        lock_time = datetime.strptime(
+            account["lock_until"],
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+        # If current time is before unlock time
+        if datetime.now() < lock_time:
+
+            remaining = (
+                lock_time - datetime.now()
+            ).seconds
+
+            print(
+                f"🔒 Account locked! Try again in {remaining} seconds."
+            )
+
+            return None
+
+        else:
+            # Unlock account automatically
+            account["failed_attempts"] = 0
+            account["lock_until"] = None
+
+            save_data(data)
+
+    # =========================
+    # PIN CHECK
+    # =========================
     pin = getpass("Enter PIN: ")
 
-    # Verify PIN
-    if data[account_number]["pin"] != pin:
-        print("❌ Incorrect PIN!")
+    if account["pin"] != pin:
+
+        account["failed_attempts"] += 1
+
+        attempts_left = 3 - account["failed_attempts"]
+
+        # LOCK ACCOUNT
+        if account["failed_attempts"] >= 3:
+
+            lock_time = datetime.now() + timedelta(seconds=30)
+
+            account["lock_until"] = lock_time.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+            save_data(data)
+
+            print(
+                "🔒 Too many wrong attempts! Account locked for 30 seconds."
+            )
+
+            return None
+
+        save_data(data)
+
+        print(
+            f"❌ Incorrect PIN! Attempts left: {attempts_left}"
+        )
+
         return None
 
+    # =========================
+    # SUCCESSFUL LOGIN
+    # =========================
+    account["failed_attempts"] = 0
+    account["lock_until"] = None
+
+    save_data(data)
+
     print(
-        f"\n✅ Welcome, {data[account_number]['name']}!"
+        f"\n✅ Welcome, {account['name']}!"
     )
 
     return account_number
@@ -123,7 +193,6 @@ def deposit(current_user):
 
     amount = int(input("Enter deposit amount: "))
 
-    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
@@ -148,18 +217,17 @@ def withdraw(current_user):
 
     amount = int(input("Enter withdrawal amount: "))
 
-    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
 
-    # Check balance
     if data[current_user]["balance"] < amount:
         print("❌ Insufficient balance!")
         return
 
-    # Final PIN confirmation
-    pin = getpass("Enter PIN to confirm withdrawal: ")
+    pin = getpass(
+        "Enter PIN to confirm withdrawal: "
+    )
 
     if data[current_user]["pin"] != pin:
         print("❌ Incorrect PIN!")
@@ -216,30 +284,27 @@ def transfer_money(current_user):
         "Enter receiver account number: "
     )
 
-    # Check receiver existence
     if receiver not in data:
         print("❌ Receiver account not found!")
         return
 
-    # Prevent self transfer
     if receiver == current_user:
         print("❌ Cannot transfer to your own account!")
         return
 
     amount = int(input("Enter transfer amount: "))
 
-    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
 
-    # Check balance
     if data[current_user]["balance"] < amount:
         print("❌ Insufficient balance!")
         return
 
-    # Final PIN confirmation
-    pin = input("Enter PIN to confirm transfer: ")
+    pin = getpass(
+        "Enter PIN to confirm transfer: "
+    )
 
     if data[current_user]["pin"] != pin:
         print("❌ Incorrect PIN!")
@@ -253,12 +318,12 @@ def transfer_money(current_user):
     sender_name = data[current_user]["name"]
     receiver_name = data[receiver]["name"]
 
-    # Sender transaction log
+    # Sender log
     data[current_user]["transactions"].append(
         f"[{get_timestamp()}] Transferred ₹{amount} to {receiver_name} ({receiver})"
     )
 
-    # Receiver transaction log
+    # Receiver log
     data[receiver]["transactions"].append(
         f"[{get_timestamp()}] Received ₹{amount} from {sender_name} ({current_user})"
     )
@@ -334,7 +399,6 @@ while True:
 
         current_user = login()
 
-        # If login successful
         if current_user:
             user_dashboard(current_user)
 
