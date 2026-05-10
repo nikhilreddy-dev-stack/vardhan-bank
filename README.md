@@ -9,6 +9,7 @@ A Python-based banking management system.
 - Fund transfer
 - Session-based operations
 - Account number based banking
+- Timestamp every Transaction
 
 ## Tech Stack
 - Python
@@ -17,7 +18,9 @@ A Python-based banking management system.
 ## Libraries used
 - json
 - random (for generating random account numbers without any repetition)
+- datetime(for timestamp in every transaction)
 
 ## Upcoming Features
-- Timestamp every Transaction
+- Mini Statement
 - 3 Wrong PIN Attempts Lock Account
+- Hidden PIN Input
