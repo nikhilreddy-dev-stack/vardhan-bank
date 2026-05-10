@@ -1,4 +1,5 @@
 import json
+import random
 
 FILE = "bank.json"
 
@@ -26,25 +27,42 @@ def save_data(data):
 
 
 # =========================
+# GENERATE ACCOUNT NUMBER
+# =========================
+def generate_account_number(data):
+
+    while True:
+
+        account_number = str(
+            random.randint(10000000, 99999999)
+        )
+
+        # Ensure uniqueness
+        if account_number not in data:
+            return account_number
+
+
+# =========================
 # CREATE ACCOUNT
 # =========================
 def create_account():
 
     data = load_data()
 
-    name = input("Enter username: ")
-
-    if name in data:
-        print("❌ Account already exists!")
-        return
+    name = input("Enter your name: ")
 
     pin = input("Set 4-digit PIN: ")
 
+    # PIN validation
     if len(pin) != 4 or not pin.isdigit():
         print("❌ PIN must be exactly 4 digits!")
         return
 
-    data[name] = {
+    # Generate unique account number
+    account_number = generate_account_number(data)
+
+    data[account_number] = {
+        "name": name,
         "pin": pin,
         "balance": 0,
         "transactions": []
@@ -52,7 +70,8 @@ def create_account():
 
     save_data(data)
 
-    print("✅ Account created successfully!")
+    print("\n✅ Account created successfully!")
+    print(f"🏦 Your Account Number: {account_number}")
 
 
 # =========================
@@ -62,21 +81,25 @@ def login():
 
     data = load_data()
 
-    name = input("Enter username: ")
+    account_number = input("Enter Account Number: ")
 
-    if name not in data:
+    # Check account existence
+    if account_number not in data:
         print("❌ Account not found!")
         return None
 
     pin = input("Enter PIN: ")
 
-    if data[name]["pin"] != pin:
+    # Verify PIN
+    if data[account_number]["pin"] != pin:
         print("❌ Incorrect PIN!")
         return None
 
-    print(f"\n✅ Welcome, {name}!")
+    print(
+        f"\n✅ Welcome, {data[account_number]['name']}!"
+    )
 
-    return name
+    return account_number
 
 
 # =========================
@@ -88,6 +111,7 @@ def deposit(current_user):
 
     amount = int(input("Enter deposit amount: "))
 
+    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
@@ -112,15 +136,17 @@ def withdraw(current_user):
 
     amount = int(input("Enter withdrawal amount: "))
 
+    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
 
+    # Check balance
     if data[current_user]["balance"] < amount:
         print("❌ Insufficient balance!")
         return
 
-    # Final confirmation PIN
+    # Final PIN confirmation
     pin = input("Enter PIN to confirm withdrawal: ")
 
     if data[current_user]["pin"] != pin:
@@ -145,7 +171,9 @@ def check_balance(current_user):
 
     data = load_data()
 
-    print(f"\n💰 Current Balance: ₹{data[current_user]['balance']}")
+    print(
+        f"\n💰 Current Balance: ₹{data[current_user]['balance']}"
+    )
 
 
 # =========================
@@ -161,8 +189,8 @@ def history(current_user):
         print("No transactions yet.")
         return
 
-    for t in data[current_user]["transactions"]:
-        print("-", t)
+    for transaction in data[current_user]["transactions"]:
+        print("-", transaction)
 
 
 # =========================
@@ -172,22 +200,28 @@ def transfer_money(current_user):
 
     data = load_data()
 
-    receiver = input("Enter receiver username: ")
+    receiver = input(
+        "Enter receiver account number: "
+    )
 
+    # Check receiver existence
     if receiver not in data:
         print("❌ Receiver account not found!")
         return
 
+    # Prevent self transfer
     if receiver == current_user:
-        print("❌ Cannot transfer to yourself!")
+        print("❌ Cannot transfer to your own account!")
         return
 
     amount = int(input("Enter transfer amount: "))
 
+    # Validate amount
     if amount <= 0:
         print("❌ Invalid amount!")
         return
 
+    # Check balance
     if data[current_user]["balance"] < amount:
         print("❌ Insufficient balance!")
         return
@@ -201,15 +235,20 @@ def transfer_money(current_user):
 
     # Transfer process
     data[current_user]["balance"] -= amount
+
     data[receiver]["balance"] += amount
 
-    # Transaction logs
+    sender_name = data[current_user]["name"]
+    receiver_name = data[receiver]["name"]
+
+    # Sender transaction log
     data[current_user]["transactions"].append(
-        f"Transferred ₹{amount} to {receiver}"
+        f"Transferred ₹{amount} to {receiver_name} ({receiver})"
     )
 
+    # Receiver transaction log
     data[receiver]["transactions"].append(
-        f"Received ₹{amount} from {current_user}"
+        f"Received ₹{amount} from {sender_name} ({current_user})"
     )
 
     save_data(data)
@@ -222,9 +261,16 @@ def transfer_money(current_user):
 # =========================
 def user_dashboard(current_user):
 
+    data = load_data()
+
+    user_name = data[current_user]["name"]
+
     while True:
 
-        print(f"\n====== {current_user.upper()} DASHBOARD ======")
+        print(
+            f"\n====== {user_name.upper()}'S DASHBOARD ======"
+        )
+
         print("1. Deposit")
         print("2. Withdraw")
         print("3. Check Balance")
@@ -250,7 +296,7 @@ def user_dashboard(current_user):
             transfer_money(current_user)
 
         elif choice == "6":
-            print(f"👋 Logged out from {current_user}")
+            print(f"👋 Logged out from {user_name}")
             break
 
         else:

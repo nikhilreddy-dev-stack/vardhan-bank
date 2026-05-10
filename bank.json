@@ -13,5 +13,17 @@
         "pin": "7890",
         "balance": 0,
         "transactions": []
+    },
+    "81215619": {
+        "name": "nikhil",
+        "pin": "2345",
+        "balance": 0,
+        "transactions": []
+    },
+    "46615333": {
+        "name": "akhil",
+        "pin": "6776",
+        "balance": 0,
+        "transactions": []
     }
 }
